@@ -1,13 +1,14 @@
 import { Pressable, TextInput, View } from "react-native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 const SendMessage = ({ chat }) => {
 
     const [message, setMessage] = useState("");
     
     const sendMessage = () => {
-        console.warn(message);
+        const { send } = useAuth();
         setMessage("");
     }
 

@@ -8,11 +8,11 @@ import imageSlice from './image/imageSlice';
 import followersSlice from './followers/followersSlice';
 import suggestionSlice from './suggestion/suggestionSlice';
 
-import axios from 'axios';
 import { setLanguages } from './languages/languageSlice';
 import { setFollowers } from './followers/followersSlice';
 import { setSuggestions } from './suggestion/suggestionSlice';
 import request from '../services/request';
+import chatSlice, { setChats } from './chat/chatSlice';
 
 
 export const store = configureStore({
@@ -21,7 +21,8 @@ export const store = configureStore({
         languages: languageSlice,
         image: imageSlice,
         followers: followersSlice,
-        suggestions: suggestionSlice
+        suggestions: suggestionSlice,
+        chats: chatSlice
     },
     middleware: [thunk]
 });
@@ -46,5 +47,13 @@ export const fecthSuggestions = () => {
     return async (dispatch) => {
         const { data, status } = await request('GET', 'user/feed');
         dispatch(setSuggestions(data.suggestions));
+    }
+}
+
+export const fecthChats = () => {
+    return async (dispatch) => {
+        const { data, status } = await request('GET', 'chat/all');
+        console.log(data)
+        dispatch(setChats(data.chats));
     }
 }

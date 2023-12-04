@@ -3,31 +3,44 @@ import Provider from "../components/Provider";
 import { useNavigation } from "@react-navigation/native";
 import { useRef, useState, useEffect } from "react";
 import { useStore } from "react-redux";
-
+import { fecthChats } from "../redux/store";
 
 const Home = () => {
 
     const navigation = useNavigation();
     const store = useStore();
 
-    const ws = useRef(new WebSocket('ws://10.115.65.13:5000/')).current;
+    store.dispatch(fecthChats())
+    const chats = store.getState().chats.data;
+    console.log(chats);
 
-    ws.onopen = () => {
-        console.warn("conexão aberta");
-        const message = { id: "OPEN", data: { id:  store.getState().auth.id } };
-        ws.send(JSON.stringify(message));
+    const user = store.getState().auth.user;
+
+    const loadChat = (chat) => {
+        navigation.navigate("Chat", { socket: ws, chat });
     }
-
-    ws.onmessage = (e) => {
-        console.warn(e.data)
-    }
-
+    
     return(
         <Provider>
             <View>
-                <Pressable onPress={() => navigation.navigate("Chat")}>
-                    <Text>Clique para ir ao chat</Text>
-                </Pressable>
+                <View>
+                   {
+                    chats.map(chat => {
+                        let i = 0;
+                        if (chat.users.indexOf(user) === 0) {
+                            i = 1;
+                        }
+                        
+                        return (
+                            <Pressable onPress={() => loadChat(chat)} className="bg-fuchsia-400 m-4 p-2 rounded-sm">
+                                <View>
+                                    <Text>{chat.users[i]}</Text>
+                                </View>
+                            </Pressable>
+                        )
+                    })
+                   }
+                </View>
             </View>
         </Provider>
     )

@@ -5,7 +5,7 @@ import Photo from './Photo';
 const Suggestion = ({ suggestion }) => {
 
     return (
-        <View className="bg-purple-300 mx-2 rounded-lg h-full px-3 py-7">
+        <View className=" mx-2 rounded-lg h-5/6 px-3 py-7">
             <Photo user={suggestion.name} />
             <Text className="text-3xl font-bold text-center text-purple-700 m-2" style={{ fontFamily: 'Ubuntu' }}>{suggestion.name}</Text>
             <View>
