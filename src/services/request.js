@@ -19,7 +19,7 @@ const request = async (method="GET", endpoint, body) => {
         status = error.response.status
     });
 
-    return { data, status }
+    return { data, status };
 }
 
 export default request;

@@ -24,7 +24,7 @@ const Input = (props) => {
                                 numberOfLines={props.numberOfLines}
                                 value={value} 
                                 onChangeText={onChange} 
-                                className="mx-2 w-5/6 text-slate-600 bg-g" 
+                                className="mx-2 w-5/6 text-slate-600" 
                                 style={{fontFamily: 'Ubuntu'}}
                             />
                         )

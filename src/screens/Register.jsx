@@ -1,4 +1,4 @@
-import { Alert, Pressable, Text, View, ScrollView } from 'react-native';
+import { Alert, Pressable, Text, View, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from 'react-redux';
@@ -12,6 +12,7 @@ import Selector from '../components/Selector';
 import { fetchLanguages } from '../redux/store';
 import request from '../services/request';
 import { setLearn, setSpeak } from '../redux/languages/languageSlice';
+import { useEffect, useState } from 'react';
 
 const Register = (props) => {
 
@@ -25,6 +26,24 @@ const Register = (props) => {
 
     const navigation = useNavigation();
     const store = useStore();
+
+    const [languages, setLanguages] = useState([]);
+    const [loaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const { data, status } = await request("get","language/all");
+                setLanguages(data.languages);
+            } catch(e) {
+                return
+            } finally {
+                setLoaded(true);
+            }
+        }
+
+        fetch()
+    }, [])
 
     const handleRedirect = () => {
         navigation.navigate('Login');
@@ -42,7 +61,6 @@ const Register = (props) => {
         const { data, status } = await request("POST", "user/sign-up", { name: user, password, biography, learn, speak });
 
         if (status == 201) {
-            const user = data.user;
             store.dispatch(setSpeak([]));
             store.dispatch(setLearn([]));
 
@@ -59,54 +77,61 @@ const Register = (props) => {
         }
     }
 
-    store.dispatch(fetchLanguages());
-
     return (
         <Provider>
-            <ScrollView>
-                <View className="container flex my-6 p-4">
-                    <View className="container flex mt-4">
-                        <Text className="text-center text-2xl m-1 text-fuchsia-600" style={{ fontFamily: 'Ubuntu' }}>Crie sua conta</Text>
-                    </View>
-                    <View className="bg-fuchsia-600 border-fuchsia-600 mx-20 h-1"></View>
-                    <View className="my-6">
-                        <PhotoPicker />
-                        <View className="container my-2 mt-4">
-                            <View className="container flex my-1">
-                                <Input placeholder='Digite seu nome' icon='account' label='Usuário' control={control} field='user' rules={user} labelStyle="text-fuchsia-500" />
-                                {errors.user && <Text className="mx-7 text-fuchsia-600" style={{ fontFamily: 'Ubuntu', fontSize: 16 }}>{errors.user.message}</Text>}
+            { 
+                loaded ? 
+                    <ScrollView>
+                        <View className="container flex my-6 p-4">
+                            <View className="container flex mt-4">
+                                <Text className="text-center text-2xl m-1 text-fuchsia-600" style={{ fontFamily: 'Ubuntu' }}>Crie sua conta</Text>
                             </View>
-                            <View className="container flex my-1">
-                                <Input placeholder='Digite sua senha' icon='lock' label='Senha' control={control} field='password' rules={password} labelStyle="text-fuchsia-500" secureTextEntry />
-                                {errors.password && <Text className="mx-7 text-fuchsia-600" style={{ fontFamily: 'Ubuntu', fontSize: 16 }}>{errors.password.message}</Text>}
-                            </View>
-                            <View className="container flex my-1">
-                                <Input placeholder='Conte um pouco sobre você!' icon='text-box' label='Biografia' control={control} field='biography' rules={biography} multiline={true} numberOfLines={5} labelStyle="text-fuchsia-500" />
-                                {errors.biography && <Text className="mx-7 text-fuchsia-600" style={{ fontFamily: 'Ubuntu', fontSize: 16 }}>{errors.biography.message}</Text>}
-                            </View>
-                            <View className="flex my-7 px-4 items-center bg-gray-200 rounded w-auto mx-4 border-2 border-gray-400">
-                                <View className="flex container px-3 my-1">
-                                    <Text className="text-center text-fuchsia-500 text-lg" style={{ fontFamily: 'Ubuntu' }}>Para aprender:</Text>
-                                    <Selector type='learn' />
+                            <View className="bg-fuchsia-600 border-fuchsia-600 mx-20 h-1"></View>
+                            <View className="my-6">
+                                <PhotoPicker />
+                                <View className="container my-2 mt-4">
+                                    <View className="container flex my-1">
+                                        <Input placeholder='Digite seu nome' icon='account' label='Usuário' control={control} field='user' rules={user} labelStyle="text-fuchsia-500" />
+                                        {errors.user && <Text className="mx-7 text-fuchsia-600" style={{ fontFamily: 'Ubuntu', fontSize: 16 }}>{errors.user.message}</Text>}
+                                    </View>
+                                    <View className="container flex my-1">
+                                        <Input placeholder='Digite sua senha' icon='lock' label='Senha' control={control} field='password' rules={password} labelStyle="text-fuchsia-500" secureTextEntry />
+                                        {errors.password && <Text className="mx-7 text-fuchsia-600" style={{ fontFamily: 'Ubuntu', fontSize: 16 }}>{errors.password.message}</Text>}
+                                    </View>
+                                    <View className="container flex my-1">
+                                        <Input placeholder='Conte um pouco sobre você!' icon='text-box' label='Biografia' control={control} field='biography' rules={biography} multiline={true} numberOfLines={5} labelStyle="text-fuchsia-500" />
+                                        {errors.biography && <Text className="mx-7 text-fuchsia-600" style={{ fontFamily: 'Ubuntu', fontSize: 16 }}>{errors.biography.message}</Text>}
+                                    </View>
+                                    <View className="flex my-7 px-4 items-center bg-gray-200 rounded w-auto mx-4 border-2 border-gray-400">
+                                        <View className="flex container px-3 my-1">
+                                            <Text className="text-center text-fuchsia-500 text-lg" style={{ fontFamily: 'Ubuntu' }}>Para aprender:</Text>
+                                            <Selector type='learn' data={languages}/>
+                                        </View>
+                                        <View className="flex container px-3 my-1">
+                                            <Text className="text-center text-fuchsia-500 text-lg" style={{ fontFamily: 'Ubuntu' }}>Já faladas:</Text>
+                                            <Selector type='speak' data={languages}/>
+                                        </View>
+                                    </View>
                                 </View>
-                                <View className="flex container px-3 my-1">
-                                    <Text className="text-center text-fuchsia-500 text-lg" style={{ fontFamily: 'Ubuntu' }}>Já faladas:</Text>
-                                    <Selector type='speak' />
+                                <View className="container flex items-center my-6">
+                                    <Button text='Criar conta' buttonStyle="bg-fuchsia-600" textStyle="text-white" onPress={handleSubmit(handleRegister)} />
                                 </View>
+                            </View>
+                            <View className="container my-2 p-4">
+                                <Text className="text-center text-lg text-slate-800" style={{ fontFamily: 'Ubuntu' }}>Já tem uma conta?</Text>
+                                <Pressable onPress={() => handleRedirect()}>
+                                    <Text className="text-center text-lg text-fuchsia-600" style={{ fontFamily: 'Ubuntu' }}>Faça login</Text>
+                                </Pressable>
                             </View>
                         </View>
-                        <View className="container flex items-center my-6">
-                            <Button text='Criar conta' buttonStyle="bg-fuchsia-600" textStyle="text-white" onPress={handleSubmit(handleRegister)} />
+                    </ScrollView>
+                :
+                    <View className="flex justify-center h-full">
+                        <View>
+                            <ActivityIndicator size={50} color="#c026d3"/>
                         </View>
                     </View>
-                    <View className="container my-2 p-4">
-                        <Text className="text-center text-lg text-slate-800" style={{ fontFamily: 'Ubuntu' }}>Já tem uma conta?</Text>
-                        <Pressable onPress={() => handleRedirect()}>
-                            <Text className="text-center text-lg text-fuchsia-600" style={{ fontFamily: 'Ubuntu' }}>Faça login</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            </ScrollView>
+            }
         </Provider>
     ) 
 }

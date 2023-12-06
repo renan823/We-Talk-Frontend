@@ -1,59 +1,77 @@
 import Provider from "../components/Provider";
-import { Text, PanResponder, View, Animated, Pressable } from "react-native";
+import { View, Pressable, ActivityIndicator } from "react-native";
 import { useStore } from "react-redux";
-import { fecthSuggestions } from "../redux/store";
 import Suggestion from "../components/Suggestion";
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import request from "../services/request";
+import { useNavigation } from "@react-navigation/native";
 
 const Feed = () => {
 
     const store = useStore();
-    store.dispatch(fecthSuggestions());
-    console.log("hey")
 
     const user = store.getState().auth.user;
-
-    const [suggestions, setSuggestions] = useState(store.getState().suggestions.data);
+    const [suggestions, setSuggestions] = useState([]);
     const [iterator, setIterator] = useState(0);
-    const [suggestion, setSuggestion] = useState(suggestions[iterator]);
-    console.log(suggestion);
-    
-    const createChat = async () => {
-        console.log("new")
-        const follower = suggestion.name;
-        const { data, status } = await request("POST", "chat/new", { follower });
+    const [loaded, setLoaded] = useState(false);
+    const navigation = useNavigation();
 
-        if (status === 201 || status === 200) {
-            console.warn(data);
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const { data, status } = await request("get","user/feed");
+                setSuggestions(data.suggestions);
+            } catch(e) {
+                return
+            } finally {
+                setLoaded(true);
+            }
         }
-        nextSuggestion()
+
+        fetch();
+    }, []) 
+
+    const createChat = async () => {
+        const follower = suggestions[iterator].name;
+        const { data, status } = await request("POST", "chat/new", { follower });
+        navigation.navigate("Chat", { chat: data.chat })
+
+        //nextSuggestion();
     }
 
     const nextSuggestion = () => {
         if (iterator + 1 >= suggestions.length) {
             setIterator(0);
         } else {
-            setIterator(iterator => iterator +1);
+            setIterator(iterator +1);
         }
-
-        setSuggestion(suggestions[iterator]);
     }
 
     return(
         <Provider>
             <View className="container flex p-4 my-6">
-                <View className="bg-purple-300 p-3 mt-8">
-                    <Suggestion suggestion={suggestion}/>
-                    <View>
-                        <Pressable onPress={nextSuggestion}>
-                            <Icon name="alpha-x" size={50}/>
-                        </Pressable>
-                        <Pressable onPress={createChat}>
-                            <Icon name="heart" size={30}/>
-                        </Pressable>
-                    </View>
+                <View className="p-3 mt-8">
+                    {
+                        (loaded && suggestions.length !== 0) ? 
+                            <View className="bg-purple-300 rounded-lg my-10 p-3">
+                                <Suggestion suggestion={suggestions[iterator]}/>
+                                <View className="flex flex-row justify-around">
+                                    <Pressable onPress={nextSuggestion}>
+                                        <Icon name="close-box" size={50} color="#7e22ce"/>
+                                    </Pressable>
+                                    <Pressable onPress={createChat}>
+                                        <Icon name="heart" size={50} color="#dc2626"/>
+                                    </Pressable>
+                                </View>
+                            </View>
+                        :
+                            <View className="flex justify-center h-full">
+                                <View>
+                                    <ActivityIndicator size={50} color="#c026d3"/>
+                                </View>
+                            </View>
+                    }
                 </View>
             </View>
         </Provider>

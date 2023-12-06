@@ -6,7 +6,7 @@ import Checklist from './Checklist';
 import { useStore } from 'react-redux';
 import { setLearn, setSpeak } from '../redux/languages/languageSlice';
 
-const Selector = ({ type }) => {
+const Selector = ({ type, data }) => {
 
     const store = useStore();
 
@@ -32,7 +32,7 @@ const Selector = ({ type }) => {
         <Modal isVisible={isModalVisible}>
             <View className="container flex bg-white rounded-md p-2 justify-center">
                 <Text className="text-fuchsia-500 text-lg text-center" style={{fontFamily: 'Ubuntu'}}>Selecione as línguas de seu interesse.</Text>
-                <Checklist origin={origin} data={store.getState().languages.data} onChange={onChange}/>
+                <Checklist origin={origin} data={data} onChange={onChange}/>
                 <Button text="Feito" buttonStyle="bg-fuchsia-600 self-center" textStyle="text-white" onPress={toggleModal}/>
             </View>
         </Modal>
