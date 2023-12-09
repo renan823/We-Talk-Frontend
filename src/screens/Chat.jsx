@@ -1,29 +1,31 @@
 import { View, Text, ScrollView, TextInput, Pressable, FlatList, ActivityIndicator } from "react-native";
 import Provider from "../components/Provider";
-import { useAuth } from "../contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import request from "../services/request";
 import { useStore } from "react-redux";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
+import { useSocket } from "../contexts/SocketContext";
 
 const Chat = ({ route }) => {
 
     const chat = route.params.chat;
-    const { socket, event } = useAuth();
     const store = useStore();
     const navigation = useNavigation();
 
     const user = store.getState().auth.user;
 
-    let target = chat.users[0]
+    const { send, event, setEvent } = useSocket();
+
+    let target = chat.users[0];
     if (target === user) {
         target = chat.users[1];
     }
 
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
-    const [loaded, setLoaded] = useState(false)
+    const [loaded, setLoaded] = useState(false);
+    const [sended, setSended] = useState(false);
 
     const fetch = async () => {
         try {
@@ -37,20 +39,13 @@ const Chat = ({ route }) => {
     }
 
     useEffect(() => {
-        fetch();
-    }, [])
-
-    const handleSendMessage = async () => {
-        if (message.trim().length !== 0) {
-            const body = { from: user, to: target, text: message, date: new Date(), chat: chat._id };
-            const payload = { event: "send", data: { message: body } };
-            socket.send(JSON.stringify(payload));
-
-            await fetch();
-
-            setMessage("");
+        if (event) {
+            if (event.data.message && event.data.message.chat === chat._id) {
+                setMessages([...messages, event.data.message]);
+                setEvent(null);
+            }
         }
-    }
+    }, [event])
 
     const Message = ({ item }) => {
         let style = "self-start";
@@ -66,8 +61,25 @@ const Chat = ({ route }) => {
     }
 
     const handleRedirect = () => {
-        navigation.navigate("Home")
+        navigation.navigate("Home");
     }
+
+    const handleSendMessage = () => {
+        if (! sended) {
+            if (message.trim() !== "") {
+                setSended(true)
+                const payload = { event: "send", data: { message: { to: target, from: user, text: message, date: new Date, chat: chat._id } } };
+                setMessage("");
+                send(payload);
+                setSended(false);
+            }
+        }
+    }
+
+
+    useEffect(() => {
+        fetch();
+    }, []);
 
     return(
         <Provider>
@@ -81,10 +93,15 @@ const Chat = ({ route }) => {
                             </Pressable>
                         </View>
                         <View className="bg-white  rounded-lg m-1 my-9">
-                            <ScrollView className="bg-white my-2 px-3 h-3/4">
-                                <FlatList data={messages} keyExtractor={(item) => item._id } renderItem={Message}/>
+                            <View>
+                                <FlatList 
+                                    data={messages} 
+                                    keyExtractor={(item) => item.date } 
+                                    renderItem={Message} 
+                                    className="bg-white my-2 px-3 h-3/4"
+                                />
                                 <View className="p-4"></View>
-                            </ScrollView>
+                            </View>
                             <View className="flex flex-row bg-gray-200 items-center align-center justify-center mx-4 my-1 p-2 w-auto rounded border-2 border-gray-400">
                                 <TextInput placeholder="Mensagem" value={message} onChangeText={(text) => setMessage(text)} className="mx-2 w-5/6 text-slate-600 font-bold" style={{fontFamily: 'Ubuntu'}}/>
                                 <Pressable onPress={handleSendMessage}>

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useStore } from "react-redux";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import request from "../services/request";
+import { useSocket } from "../contexts/SocketContext";
 
 const Home = () => {
 
@@ -12,6 +13,8 @@ const Home = () => {
     const store = useStore();
 
     const user = store.getState().auth.user;
+    const id = store.getState().auth.id;
+    const { send } = useSocket();
 
     const [chats, setChats] = useState([]);
     const [loaded, setLoaded] = useState(false);
@@ -32,6 +35,7 @@ const Home = () => {
     })
 
     const loadChat = (chat) => {
+        send({ event: "open", data: { name: store.getState().auth.user } });
         navigation.navigate("Chat", { chat });
     }
 
@@ -60,9 +64,7 @@ const Home = () => {
                 <View>
                     {
                         loaded ?
-                            <ScrollView>
-                                <FlatList data={chats} keyExtractor={(item) => item._id} renderItem={Chat}/>
-                            </ScrollView>
+                            <FlatList data={chats} keyExtractor={(item) => item._id} renderItem={Chat}/>
                         :
                             <View className="flex justify-center h-full">
                                 <View>

@@ -6,14 +6,18 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import request from '../services/request';
+import { useSocket } from '../contexts/SocketContext';
 
 const Settings = () => {
 
     const navigation = useNavigation();
     const { logout } = useAuth();
-    const [biography, setBiography] = useState("")
+    const [biography, setBiography] = useState("");
+
+    const { close } = useSocket();
 
     const handleLogout = async () => {
+        close();
         await logout();
     }
 

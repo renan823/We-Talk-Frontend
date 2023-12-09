@@ -1,5 +1,4 @@
 import { View, Text, ScrollView, FlatList } from 'react-native';
-import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import Photo from './Photo';
 
 const Suggestion = ({ suggestion }) => {
@@ -11,17 +10,35 @@ const Suggestion = ({ suggestion }) => {
             <View>
                 <Text className="text-center text-lg" style={{ fontFamily: 'Ubuntu' }}>{suggestion.biography}</Text>
             </View>
-            <View className="m-2 p-3 bg-white rounded-md h-36">
-                <ScrollView>
+            <View className="m-2 p-3 bg-white rounded-md h-40">
+                <View>
                     <Text className="text-lg" style={{ fontFamily: 'Ubuntu' }}> - Fala:</Text>
                     <View className="ml-7">
-                        <FlatList data={suggestion.speak} keyExtractor={(item) => item} renderItem={({item}) => <Text style={{ fontFamily: 'Ubuntu' }}>•{item}</Text>}/>
+                        <ScrollView>
+                            {
+                                suggestion.speak.map((item, index) => {
+                                    return (
+                                        <Text style={{ fontFamily: 'Ubuntu' }} key={index}>•{item}</Text>
+                                    )
+                                })
+                            }
+                        </ScrollView>
                     </View>                     
                     <Text className="text-lg" style={{ fontFamily: 'Ubuntu' }}> - Quer aprender:</Text>
                     <View className="ml-7">
-                        <FlatList data={suggestion.learn} keyExtractor={(item) => item} renderItem={({item}) => <Text style={{ fontFamily: 'Ubuntu' }}>•{item}</Text>}/>
+                        <ScrollView>
+                            {
+                                suggestion.learn.map((item, index) => {
+                                    return (
+                                        <View>
+                                            <Text style={{ fontFamily: 'Ubuntu' }} key={index}>•{item}</Text>
+                                        </View>
+                                    )
+                                })
+                            }
+                        </ScrollView>
                     </View>
-                </ScrollView>
+                </View>
             </View>
         </View>
     )
