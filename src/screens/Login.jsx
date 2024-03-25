@@ -26,6 +26,7 @@ const Login = (props) => {
     }
 
     const handleLogin = async (data) => {
+        console.log(data)
         const body = { name: data.user, password: data.password };
         await login(body);
         reset();
